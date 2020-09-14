@@ -3,7 +3,7 @@ const width = 1200;
 const height = 600;
 
 const sprites = new Image();
-//sprites.src = 'images/ship.png';
+
 sprites.src = 'images/sprite.png';
 
 //const width = window.innerWidth;
@@ -17,7 +17,8 @@ const maxStarRadius = 1.5;
 canvas.width = width;
 canvas.height = height;
 
-let sceneActive = {}; 
+let sceneActive = {};
+let frames = 0;
 
 const stars = createStars(width, height, 30);
 
@@ -54,21 +55,57 @@ function drawStars(){
 }
 
 const ship = {
-	spriteX: 0,
-	spriteY: 0,
 	width: 145,
 	height: 40,
 	x: 531,
 	y: 230,	
-	speedy: 0,
+	speedyX: 0,
+	speedyY: 0,
+	moves: [
+		{spriteX: 0, spriteY: 0},
+		{spriteX: 145, spriteY: 0},
+		{spriteX: 290, spriteY: 0}
+	],
+	actualFrame: 0,
+	updateFrame(){
+		
+		const frameInterval = 10;
+		const intervalLimit = frames % frameInterval === 0;
+		
+		if(intervalLimit){
+			const incrementBase = 1;
+			const i = incrementBase + ship.actualFrame;
+			const repeatBase = ship.moves.length;
+			ship.actualFrame = i % repeatBase;
+		}
+	},
+	
 	draw(){
-		if(startGameMessage.x > -75){
-			ship.x = ship.x - ship.speedy;
+		ship.updateFrame();
+		const {spriteX, spriteY} = ship.moves[ship.actualFrame];
+	
+		if(startGameMessage.x > -75 && sceneActive == scenes.start){			
+			ship.x = ship.x - ship.speedyX;
 		}
 		
+		if(sceneActive == scenes.game){
+//			console.log(ship.x);
+			
+			if((ship.y < 25 && ship.speedyY < 0)  ||
+			   (ship.y > 560 && ship.speedyY > 0) ||
+			   (ship.x > 1050 && ship.speedyX > 0)||
+			   (ship.x < 11 && ship.speedyX < 0)){
+				ship.speedyY = 0;
+				ship.speedyX = 0;
+			} else {
+				ship.x = ship.x + ship.speedyX;
+				ship.y = ship.y + ship.speedyY;
+			}
+		}
+				
 		ctx.drawImage(
 			sprites,
-			ship.spriteX, ship.spriteY,
+			spriteX, spriteY,
 			ship.width, ship.height,
 			ship.x, ship.y,
 			ship.width, ship.height
@@ -156,6 +193,8 @@ const pressKeyMessage = {
 };
 
 function changeScene(newScene){
+	ship.speedyX = 0;
+	ship.speedyX = 0;	
 	sceneActive = newScene;
 }
 
@@ -172,7 +211,7 @@ const scenes = {
 			
 		},
 		keyPress(){
-			ship.speedy = 5;
+			ship.speedyX = 5;
 			startGameMessage.speedy = 5;
 		}
 	},
@@ -187,30 +226,33 @@ const scenes = {
 		},
 		update(){
 			
+		},
+		keyPress(key){
+//			console.log(key.keyCode);
+
+			if(key.keyCode == 87){
+					ship.speedyY = -2;
+			} else if(key.keyCode == 83){
+					ship.speedyY = 2;
+			} else if(key.keyCode == 68){
+					ship.speedyX = 2;
+			} else if(key.keyCode == 65){
+				ship.speedyX = -2;
+			}
 		}
-	}
-	
+	}	
 };
 
 function render() {
-
-//	drawBackGround();
-//	drawStars();
-	
-//	startGameMessage.draw();
-//	ship.draw();
-
 	sceneActive.draw();
-	sceneActive.update();
-	console.log(sceneActive);
-  
-  requestAnimationFrame(render);
+	frames++;
+	requestAnimationFrame(render);
 }
 
 window.addEventListener('keydown', function(e){
 	
 	if(sceneActive.keyPress){
-		sceneActive.keyPress();
+		sceneActive.keyPress(e);
 	}
 	
 });
