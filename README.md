@@ -1,2 +1,3 @@
 # Space-Explorers
-Jogo espacial desenvolvido em JavaScript.
+Space game developed in JavaScript.
+![Screenshot of the start game screen](images/space_explorers.PNG)
